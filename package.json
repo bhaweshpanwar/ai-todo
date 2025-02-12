@@ -2,6 +2,7 @@
   "name": "ai-todo-app",
   "version": "1.0.0",
   "main": "drizzle.config.js",
+  "type": "module",
   "scripts": {
     "generate": "drizzle-kit generate",
     "migrate": "drizzle-kit migrate",
