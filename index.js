@@ -164,7 +164,7 @@ START
 
 import { db } from './db/index.js';
 import { todosTable } from './db/schema.js';
-import { ilike } from 'drizzle-orm';
+import {eq, ilike} from 'drizzle-orm';
 import 'dotenv/config';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import readlineSync from 'readline-sync';
@@ -189,7 +189,7 @@ async function searchTodo(search) {
 }
 
 async function deleteTodoById(id) {
-  await db.delete().from(todosTable).where(todosTable.id.eq(id));
+  await db.delete(todosTable).where(eq(todosTable.id,id));
 }
 
 const tools = { getAllTodos, createTodo, deleteTodoById, searchTodo };
@@ -289,10 +289,16 @@ while (true) {
           observation,
         });
         const observationResult = await chat.sendMessage(observationMessage);
-        console.log(
-          '🤖:',
-          observationResult.response.candidates[0].content.parts[0].text
-        );
+        let observationOutput = observationResult.response.candidates[0].content.parts[0].text;
+        try {
+          const observationJson = JSON.parse(observationOutput.replace(/```json|```/g, '').trim());
+          // console.log(observationJson)
+          observationOutput = observationJson.output;
+        } catch (parseError) {
+          console.error('Error parsing observation JSON:', parseError);
+          observationOutput = 'Error in processing observation result.';
+        }
+        console.log(`🤖: ${observationOutput}`);
       }
     }
   } catch (error) {
